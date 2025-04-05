@@ -1,41 +1,44 @@
-def solve_linear_equations(coefficients, constants):
-    """
-    Solves a system of linear equations using Gaussian elimination.
+import numpy as np
 
-    Parameters:
-    coefficients (list of list of float): The coefficients of the linear equations.
-    constants (list of float): The constants of the linear equations.
+# Size of the matrix 
+N = 1272
 
-    Returns:
-    list of float: The solution to the system of equations.
-    """
-    n = len(constants)
+matrix = np.zeros((N, N), dtype=np.float64)
+
+b = np.zeros((N, 1), dtype=np.float64)
+
+a1 = 6
+
+# Fill the matrix matrix with values
+for i in range(N-2):
+    matrix[i, i] = a1
+    matrix[i, i+1] = -1
+    matrix[i, i+2] = -1
+    matrix[i+1, i] = -1
+    matrix[i+2, i] = -1
+
+# Fill the last two rows of matrix
+matrix[N-2, N-2] = a1
+matrix[N-2, N-1] = -1
+matrix[N-1, N-2] = -1
+matrix[N-1, N-1] = a1
+matrix[N-1, N-2] = -1
+matrix[N-2, N-1] = -1
+
+# Fill vector b
+for i in range(N):
+    b[i, 0] = np.sin(i*4.0)
+
+
+# Solve the system of equations
+# matrix * x = b
+x_jac = np.zeros((N, 1), dtype=np.float64)
+
+# Jacobian iteration
+for i in range(N):
+    x_jac[i, 0] = b[i, 0] / matrix[i, i]
+    for j in range(N):
+        if i != j:
+            x_jac[i, 0] -= matrix[i, j] * x_jac[j, 0] / matrix[i, i]
     
-    # Forward elimination
-    for i in range(n):
-        # Make the diagonal contain all non-zero elements
-        if coefficients[i][i] == 0:
-            raise ValueError("Matrix is singular or nearly singular")
-        
-        for j in range(i + 1, n):
-            ratio = coefficients[j][i] / coefficients[i][i]
-            for k in range(i, n):
-                coefficients[j][k] -= ratio * coefficients[i][k]
-            constants[j] -= ratio * constants[i]
-
-    # Back substitution
-    solution = [0] * n
-    for i in range(n - 1, -1, -1):
-        solution[i] = constants[i]
-        for j in range(i + 1, n):
-            solution[i] -= coefficients[i][j] * solution[j]
-        solution[i] /= coefficients[i][i]
-
-    return solution
-
-if __name__ == "__main__":
-    # Example usage
-    coeffs = [[2, 1, -1], [3, 3, 9], [3, 2, 1]]
-    consts = [8, 0, 4]
-    solution = solve_linear_equations(coeffs, consts)
-    print("Solution:", solution)
+  
